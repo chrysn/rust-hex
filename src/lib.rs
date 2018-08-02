@@ -1,4 +1,5 @@
 #![cfg_attr(feature = "benchmarks", feature(test))]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 // Copyright (c) 2013-2014 The Rust Project Developers.
 // Copyright (c) 2015-2018 The rust-hex Developers.
@@ -25,8 +26,10 @@
 //! }
 //! ```
 
+#[cfg(feature = "std")]
 extern crate core;
 
+#[cfg(feature = "std")]
 use std::error;
 use core::fmt;
 use core::iter;
@@ -142,6 +145,7 @@ pub enum FromHexError {
     InvalidStringLength,
 }
 
+#[cfg(feature = "std")]
 impl error::Error for FromHexError {
     fn description(&self) -> &str {
         match *self {
@@ -211,6 +215,7 @@ fn val(c: u8, idx: usize) -> Result<u8, FromHexError> {
     }
 }
 
+#[cfg(feature = "std")]
 impl FromHex for Vec<u8> {
     type Error = FromHexError;
 
@@ -279,6 +284,7 @@ from_hex_array_impl! {
 /// assert_eq!(hex::encode("Hello world!"), "48656c6c6f20776f726c6421");
 /// assert_eq!(hex::encode(vec![1, 2, 3, 15, 16]), "0102030f10");
 /// ```
+#[cfg(feature = "std")]
 pub fn encode<T: AsRef<[u8]>>(data: T) -> String {
     data.encode_hex()
 }
@@ -293,6 +299,7 @@ pub fn encode<T: AsRef<[u8]>>(data: T) -> String {
 /// assert_eq!(hex::encode_upper("Hello world!"), "48656C6C6F20776F726C6421");
 /// assert_eq!(hex::encode_upper(vec![1, 2, 3, 15, 16]), "0102030F10");
 /// ```
+#[cfg(feature = "std")]
 pub fn encode_upper<T: AsRef<[u8]>>(data: T) -> String {
     data.encode_hex_upper()
 }
@@ -312,6 +319,7 @@ pub fn encode_upper<T: AsRef<[u8]>>(data: T) -> String {
 /// assert_eq!(hex::decode("123"), Err(hex::FromHexError::OddLength));
 /// assert!(hex::decode("foo").is_err());
 /// ```
+#[cfg(feature = "std")]
 pub fn decode<T: AsRef<[u8]>>(data: T) -> Result<Vec<u8>, FromHexError> {
     FromHex::from_hex(data)
 }
