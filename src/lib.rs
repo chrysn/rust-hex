@@ -20,9 +20,14 @@
 //! ```
 //! extern crate hex;
 //!
+//! #[cfg(feature = "std")]
 //! fn main() {
 //!     let hex_string = hex::encode("Hello world!");
 //!     println!("{}", hex_string); // Prints '48656c6c6f20776f726c6421'
+//! }
+//!
+//! #[cfg(not(feature = "std"))]
+//! fn main() {
 //! }
 //! ```
 
@@ -179,9 +184,9 @@ impl fmt::Display for FromHexError {
 /// ```
 /// use hex::FromHex;
 ///
-/// match Vec::from_hex("48656c6c6f20776f726c6421") {
+/// match &<[u8; 12]>::from_hex("48656c6c6f20776f726c6421") {
 ///     Ok(vec) => {
-///         for b in vec {
+///         for &b in vec {
 ///             println!("{}", b as char);
 ///         }
 ///     }
@@ -248,7 +253,7 @@ macro_rules! from_hex_array_impl {
 }
 
 from_hex_array_impl! {
-    1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+    0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
     17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
     33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
     49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64
@@ -355,91 +360,87 @@ pub fn decode_to_slice<T: AsRef<[u8]>>(data: T, out: &mut [u8]) -> Result<(), Fr
 
 #[cfg(test)]
 mod test {
-    use super::{encode, decode, FromHex, FromHexError};
+    use super::{FromHex, FromHexError};
 
     #[test]
+    #[cfg(feature = "std")]
     fn test_encode() {
+        use super::encode;
+
         assert_eq!(encode("foobar"), "666f6f626172");
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn test_decode() {
+        use super::decode;
+
         assert_eq!(decode("666f6f626172"), Ok("foobar".to_owned().into_bytes()));
     }
 
     #[test]
     pub fn test_from_hex_okay_str() {
         assert_eq!(
-            Vec::from_hex("666f6f626172").unwrap(),
-            b"foobar"
+            <[u8; 6]>::from_hex("666f6f626172"),
+            Ok(*b"foobar")
         );
         assert_eq!(
-            Vec::from_hex("666F6F626172").unwrap(),
-            b"foobar"
+            <[u8; 6]>::from_hex("666F6F626172"),
+            Ok(*b"foobar")
         );
     }
 
     #[test]
     pub fn test_from_hex_okay_bytes() {
         assert_eq!(
-            Vec::from_hex(b"666f6f626172").unwrap(),
-            b"foobar"
+            <[u8; 6]>::from_hex(b"666f6f626172"),
+            Ok(*b"foobar")
         );
         assert_eq!(
-            Vec::from_hex(b"666F6F626172").unwrap(),
-            b"foobar"
+            <[u8; 6]>::from_hex(b"666F6F626172"),
+            Ok(*b"foobar")
         );
     }
 
     #[test]
     pub fn test_invalid_length() {
         assert_eq!(
-            Vec::from_hex("1").unwrap_err(),
-            FromHexError::OddLength
+            <[u8; 1]>::from_hex("1"),
+            Err(FromHexError::OddLength)
         );
         assert_eq!(
-            Vec::from_hex("666f6f6261721").unwrap_err(),
-            FromHexError::OddLength
+            <[u8; 1]>::from_hex("666f6f6261721"),
+            Err(FromHexError::OddLength)
         );
     }
 
     #[test]
     pub fn test_invalid_char() {
         assert_eq!(
-            Vec::from_hex("66ag").unwrap_err(),
-            FromHexError::InvalidHexCharacter {
+            <[u8; 2]>::from_hex("66ag"),
+            Err(FromHexError::InvalidHexCharacter {
                 c: 'g',
                 index: 3
-            }
+            })
         );
     }
 
     #[test]
     pub fn test_empty() {
-        assert_eq!(Vec::from_hex("").unwrap(), b"");
+        assert_eq!(
+            <[u8; 0]>::from_hex(""),
+            Ok(*b"")
+        );
     }
 
     #[test]
     pub fn test_from_hex_whitespace() {
         assert_eq!(
-            Vec::from_hex("666f 6f62617").unwrap_err(),
-            FromHexError::InvalidHexCharacter {
+            <[u8; 6]>::from_hex("666f 6f62617"),
+            Err(FromHexError::InvalidHexCharacter {
                 c: ' ',
                 index: 4
-            }
-        );
-    }
-
-    #[test]
-    pub fn test_from_hex_array() {
-        assert_eq!(
-            <[u8; 6] as FromHex>::from_hex("666f6f626172"),
-            Ok([0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72])
-        );
-
-        assert_eq!(
-            <[u8; 5] as FromHex>::from_hex("666f6f626172"),
-            Err(FromHexError::InvalidStringLength)
+            })
         );
     }
 }
