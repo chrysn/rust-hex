@@ -1,6 +1,6 @@
 [package]
 name = "hex-noalloc"
-version = "0.3.2"
+version = "0.3.2-post1"
 authors = ["KokaKiwi <kokakiwi@kokakiwi.net>"]
 description = "Encoding and decoding data into/from hexadecimal representation."
 license = "MIT OR Apache-2.0"
