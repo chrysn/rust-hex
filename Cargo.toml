@@ -8,4 +8,6 @@ documentation = "https://docs.rs/hex-noalloc/"
 repository = "https://github.com/chrysn/rust-hex"
 
 [features]
+default = ["std"]
+std = []
 benchmarks = []
